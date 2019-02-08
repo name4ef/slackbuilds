@@ -1,0 +1,50 @@
+@@ diff -ur /usr/lib64/python2.7/site-packages/bugwarrior{.orig,} > trackeywords.patch
+
+Only in /usr/lib64/python2.7/site-packages/bugwarrior.orig: db.py.orig
+diff -ur /usr/lib64/python2.7/site-packages/bugwarrior.orig/services/__init__.py /usr/lib64/python2.7/site-packages/bugwarrior/services/__init__.py
+--- /usr/lib64/python2.7/site-packages/bugwarrior.orig/services/__init__.py	2018-06-25 18:09:08.128999961 +0700
++++ /usr/lib64/python2.7/site-packages/bugwarrior/services/__init__.py	2018-06-25 17:20:29.318822270 +0700
+@@ -303,7 +303,11 @@
+         for tag in self.origin['add_tags']:
+             tag = Template(tag).render(self.get_template_context())
+             if tag:
+-                added_tags.append(tag)
++                if tag.split(','):
++                    for t in tag.split(','):
++                        added_tags.append(t)
++                else:
++                    added_tags.append(tag)
+ 
+         return added_tags
+ 
+diff -ur /usr/lib64/python2.7/site-packages/bugwarrior.orig/services/trac.py /usr/lib64/python2.7/site-packages/bugwarrior/services/trac.py
+--- /usr/lib64/python2.7/site-packages/bugwarrior.orig/services/trac.py	2018-06-25 18:09:08.128999961 +0700
++++ /usr/lib64/python2.7/site-packages/bugwarrior/services/trac.py	2018-06-25 15:57:56.584520757 +0700
+@@ -21,6 +21,7 @@
+     URL = 'tracurl'
+     NUMBER = 'tracnumber'
+     COMPONENT = 'traccomponent'
++    KEYWORDS = 'trackeywords'
+ 
+     UDAS = {
+         SUMMARY: {
+@@ -39,6 +40,10 @@
+             'type': 'string',
+             'label': 'Trac Component',
+         },
++        KEYWORDS: {
++            'type': 'string',
++            'label': 'Trac Keywords',
++        },
+     }
+     UNIQUE_KEY = (URL, )
+ 
+@@ -60,6 +65,7 @@
+             self.SUMMARY: self.record['summary'],
+             self.NUMBER: self.record['number'],
+             self.COMPONENT: self.record['component'],
++            self.KEYWORDS: self.record['keywords'].replace(' ',',')
+         }
+ 
+     def get_default_description(self):
+Only in /usr/lib64/python2.7/site-packages/bugwarrior/services: trac.py.orig

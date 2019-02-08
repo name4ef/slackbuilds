@@ -1,0 +1,74 @@
+#!/usr/bin/env bash
+
+PRGNAM=plantuml
+VERSION=${VERSION:-1.2018.6}
+BUILD=${BUILD:-3tee}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e 
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+
+#find $PKG/usr/man -type f -exec gzip -9 {} \;
+
+mkdir -p $PKG/usr/lib$LIBDIRSUFFIX/java/lib
+cp $CWD/$PRGNAM.$VERSION.jar $PKG/usr/lib$LIBDIRSUFFIX/java/lib/
+ln -s /usr/lib$LIBDIRSUFFIX/java/lib/$PRGNAM.$VERSION.jar \
+    $PKG/usr/lib$LIBDIRSUFFIX/java/lib/$PRGNAM.jar
+mkdir -p $PKG/usr/bin
+cat <<EOF > $PKG/usr/bin/plantuml
+#!/usr/bin/env bash
+
+LIMIT=8192
+JAR=/usr/lib$LIBDIRSUFFIX/java/lib/$PRGNAM.jar
+FILE=\$1
+
+if [[ \$# < 1 ]]; then
+    echo "Usage: \$0 <path/to/file>"
+    exit -1
+fi
+if ! which java &>/dev/null; then
+    echo Error: java not found
+    exit -1
+fi
+
+PLANTUML_LIMIT_SIZE=\$LIMIT exec java -jar \$JAR \$FILE
+EOF
+chmod 775 $PKG/usr/bin/plantuml
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD.${PKGTYPE:-tgz}

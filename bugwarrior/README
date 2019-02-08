@@ -1,0 +1,24 @@
+Requrements
+-----------
+future != 0.16.0
+lockfile >= 0.9.1
+dogpile.cache >= 0.5.3
+taskw >= 0.8
+kitchen
+offtrac
+
+Successfully installed via pip 
+------------------------------
++MarkupSafe-1.0 
+bugwarrior-1.5.1 
++certifi-2017.11.5
++chardet-3.0.4 
++click-6.7 
+dogpile.cache-0.6.4 
++future-0.15.2 
++idna-2.6 
++jinja2-2.10
+kitchen-1.2.5 
++lockfile-0.12.2 
++python-dateutil-2.6.1 
++pytz-2017.3

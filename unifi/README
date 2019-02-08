@@ -1,0 +1,4 @@
+Download: https://dl.ubnt.com/unifi/5.7.23/UniFi.unix.zip
+
+groupadd -g 501 unifi
+useradd -u 501 -d /opt/unifi -s /bin/false -g unifi unifi

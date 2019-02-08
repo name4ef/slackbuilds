@@ -1,0 +1,128 @@
+#!/usr/bin/env bash
+
+PRGNAM=unifi
+VERSION=${VERSION:-5.7.23}
+BUILD=${BUILD:-3tee}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+UNIFI_USER=${UNIFI_USER:-501}
+UNIFI_GROUP=${UNIFI_GROUP:-501}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e 
+
+# Fail if user or group isn't valid on your system
+if ! getent passwd unifi 1>/dev/null 2>/dev/null; then
+
+cat << EOF
+
+  You must have a unifi user to run this script
+
+  # groupadd -g $UNIFI_USER unifi
+  # useradd -u $UNIFI_GROUP -d /opt/$PRGNAM -s /bin/false -g unifi unifi
+
+EOF
+
+  exit
+elif ! getent group unifi 1>/dev/null 2>/dev/null; then
+
+cat << EOF
+
+  You must have a unifi group to run this script
+  # groupadd -g $UNIFI_GROUP unifi
+
+EOF
+  exit
+fi
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+rm -rf $TMP/UniFi
+unzip $CWD/UniFi-$VERSION.unix.zip
+cd UniFi
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+mkdir -p $PKG/opt/$PRGNAM
+cp -r bin/ conf/ dl/ lib/ webapps/ $PKG/opt/$PRGNAM
+mkdir -p $PKG/etc/rc.d
+cat << EOF >$PKG/etc/rc.d/rc.unifi
+#!/usr/bin/env bash
+
+USER=unifi
+GROUP=unifi
+SHELL=\${SHELL:-/bin/bash}
+
+if ! which java >/dev/null; then
+    echo Error: java not forund
+    exit -1
+fi
+
+function start {
+    echo unifi: starting...
+    su -l \$USER -s \$SHELL -c \
+        "java -jar /opt/unifi/lib/ace.jar start &"
+}
+
+function stop {
+    su -l \$USER -s \$SHELL -c \
+        "java -jar /opt/unifi/lib/ace.jar stop"
+    echo unifi: stoping...
+}
+
+function restart {
+    stop
+    sleep 2
+    start
+}
+
+case "\$1" in
+    'start') start ;;
+    'stop') stop ;;
+    'restart') restart ;;
+    *)
+        echo "usage \$0: start|stop|restart"
+esac
+EOF
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp readme.txt $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+
+chown unifi.unifi $PKG/opt/$PRGNAM
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD.${PKGTYPE:-tgz}

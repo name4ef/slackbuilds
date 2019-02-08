@@ -1,0 +1,14 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+   |-----handy-ruler------------------------------------------------------|
+unifi: unifi controller  (Ubiquiti UniFi Network Management Controller)
+unifi:
+unifi: The UniFi devices are bundled with the UniFi Controller software, which
+unifi: allows you to manage your UniFi network using a web browser. 
+unifi:
+unifi: Homepage: https://www.ubnt.com/software/
